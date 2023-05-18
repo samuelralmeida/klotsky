@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Klotsky</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- <link rel='stylesheet' type='text/css' media='screen' href='main.css'> -->
+    <!-- <script src='main.js'></script> -->
+    <style>
+        #board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            width: 400px;
+            height: 500px;
+            gap: 5px;
+            padding: 3px;
+        }
+        .piece {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(3, 1fr);
+        }
+        .cell-opt {
+            /* border: 1px solid black; */
+            position: relative;
+            display: grid;
+            justify-items: center;
+            align-items: center;
+        }
+        .module {
+            width: 410px;
+            height: 510px;
+            position: relative;
+            margin: 20px;
+            border-radius: 3px;
+            padding: 12px;
+            box-sizing: padding-box;
+            position: relative;
+            border-right: 3px solid #1fa2ed;
+            border-top: 3px solid #1fa2ed;
+            border-left: 3px solid #1fa2ed;
+        }
+
+        .module__bottom {
+            cursor: move;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            
+            &:before {
+                border-radius: 3px 0 0 0;
+                display: block;
+                content: "";
+                flex: 2 0 0;
+                height: 1px;
+                border-bottom: 3px solid #1fa2ed;
+            }
+            &:after {
+                border-radius: 0 3px 0 0;
+                display: block;
+                content: "";
+                flex: 2 0 0;
+                height: 1px;
+                border-bottom: 3px solid #1fa2ed;
+            }
+        }
+
+        .bottom__content {
+            height: 26px;
+            color: #1fa2ed;
+            font: 12px/32px Helvetica;
+            font-weight: bold;
+            overflow: hidden;
+            flex: 0 0 200px;
+            margin-bottom: -26px;
+            text-align: center;
+        }
+      </style>
+</head>
+<body>
+    <div class="module">
+        <div class="module__bottom">
+            <div class="bottom__content"></div>
+        </div>
+        <div id="board"></div>
+    </div>
+
+    <script>
+        var pieces = {
+            "piece1": {left: 1, right: 2, up: 1, down: 3, name: "piece1", color: "brown", class: "piece"},
+            "piece2": {left: 2, right: 4, up: 1, down: 3, name: "piece2", color: "wheat", class: "piece"},
+            "piece3": {left: 4, right: 5, up: 1, down: 3, name: "piece3", color: "brown", class: "piece"},
+            "piece4": {left: 1, right: 2, up: 3, down: 5, name: "piece4", color: "brown", class: "piece"},
+            "piece5": {left: 2, right: 4, up: 3, down: 4, name: "piece5", color: "brown", class: "piece"},
+            "piece6": {left: 4, right: 5, up: 3, down: 5, name: "piece6", color: "brown", class: "piece"},
+            "piece7": {left: 1, right: 2, up: 5, down: 6, name: "piece7", color: "brown", class: "piece"},
+            "piece8": {left: 2, right: 3, up: 4, down: 5, name: "piece8", color: "brown", class: "piece"},
+            "piece9": {left: 3, right: 4, up: 4, down: 5, name: "piece9", color: "brown", class: "piece"},
+            "piece10": {left: 4, right: 5, up: 5, down: 6, name: "piece10", color: "brown", class: "piece"},
+            "white1": {left: 2, right: 3, up: 5, down: 6, name: "white1", color: "white", class: "space"},
+            "white2": {left: 3, right: 4, up: 5, down: 6, name: "white2", color: "white", class: "space"},
+        }
+
+        function renderCell(movement, arrow) {
+            var cell = document.createElement("div");
+            if (movement === null) {
+                cell.className = "cell"
+            } else {
+                cell.className = "cell-opt"
+                cell.dataset.move = movement
+                cell.style = "color:white;font-weight:bold;"
+                cell.innerText = arrow
+            }
+            return cell
+        }
+
+        function renderPiece(piece) {
+            var divParent = document.createElement("div");
+            divParent.id = piece.name
+            divParent.className = piece.class;
+            divParent.style = `background-color:${piece.color};grid-column-start:${piece.left};grid-row-start:${piece.up};grid-column-end:${piece.right};grid-row-end:${piece.down};`
+
+            if (piece.class === "piece") {
+                divParent.appendChild(renderCell(null, null))
+                divParent.appendChild(renderCell("up", "↑"))
+                divParent.appendChild(renderCell(null, null))
+                divParent.appendChild(renderCell("left", "←"))
+                divParent.appendChild(renderCell(null, null))
+                divParent.appendChild(renderCell("right", "→"))
+                divParent.appendChild(renderCell(null, null))
+                divParent.appendChild(renderCell("down", "↓"))
+                divParent.appendChild(renderCell(null, null))
+            }
+
+            return divParent
+        }
+        
+        function renderBoard() {
+            var container = document.getElementById("board");
+            container.innerHTML = "";
+
+            for (const piece in pieces) {
+                container.appendChild(renderPiece(pieces[piece]))
+            }
+        }
+
+        function addOpts() {
+            var opts = document.getElementsByClassName("cell-opt");
+            for (var i = 0; i < opts.length; i++) {
+                opts[i].addEventListener("click", function(event){
+                    const move = event.target.dataset.move
+                    const pieceName = event.target.parentNode.id
+                    console.log(move, pieceName)
+                })
+            }
+        }
+
+        renderBoard()
+        addOpts()
+
+        
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 5px;
+      width: 400px;
+      height: 500px;
+    }
+
+    .cell {
+      border: 1px solid black;
+      position: relative;
+      background-color: #eee;
+    }
+
+    .piece {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: #ccc;
+    }
+
+    .empty {
+      background-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div id="board">
+    <div class="cell" id="cell0"></div>
+    <div class="cell" id="cell1"></div>
+    <div class="cell" id="cell2"></div>
+    <div class="cell" id="cell3"></div>
+    <div class="cell" id="cell4"></div>
+    <div class="cell" id="cell5"></div>
+    <div class="cell" id="cell6"></div>
+    <div class="cell" id="cell7"></div>
+    <div class="cell" id="cell8"></div>
+    <div class="cell" id="cell9"></div>
+    <div class="cell" id="cell10"></div>
+    <div class="cell" id="cell11"></div>
+    <div class="cell" id="cell12"></div>
+    <div class="cell" id="cell13"></div>
+    <div class="cell" id="cell14"></div>
+    <div class="cell" id="cell15"></div>
+    <div class="cell" id="cell16"></div>
+    <div class="cell" id="cell17"></div>
+    <div class="cell" id="cell18"></div>
+    <div class="cell" id="cell19"></div>
+  </div>
+
+  <script>
+    var pieces = [
+      { id: 0, name: "red", width: 2, height: 2 },
+      { id: 1, name: "blue", width: 1, height: 2 },
+      { id: 2, name: "green", width: 1, height: 2 },
+      { id: 3, name: "yellow", width: 1, height: 1 },
+      { id: 4, name: "orange", width: 1, height: 1 },
+      { id: 5, name: "purple", width: 1, height: 1 },
+      { id: 6, name: "gray", width: 1, height: 1 }
+    ];
+
+    var board = [
+      [0, 0, 0, 1],
+      [0, 0, 0, 1],
+      [2, 2, 3, 1],
+      [4, 5, 3, 1],
+      [6, 6, 3, 1]
+    ];
+
+    var selectedPiece = null;
+
+    function createPieceElement(piece) {
+      var element = document.createElement("div");
+      element.className = "piece " + piece.name;
+      element.style.width = piece.width * 100 + "%";
+      element.style.height = piece.height * 100 + "%";
+      return element;
+    }
+
+    function renderBoard() {
+      var container = document.getElementById("board");
+      container.innerHTML = "";
+
+      for (var row = 0; row < board.length; row++) {
+        for (var col = 0; col < board[row].length; col++) {
+          var cell = document.createElement("div");
+          cell.className = "cell";
+          cell.id = "cell" + (row * 4 + col);
+
+          if (board[row][col] === 0) {
+            cell.className += " empty";
+          } else {
+            var piece = pieces[board[row][col] - 1];
+            var pieceElement = createPieceElement(piece);
+            cell.appendChild(pieceElement);
+          }
+
+          container.appendChild(cell);
+        }
+      }
+    }
+
+    function canMovePiece(row, col, width, height, direction) {
+      if (direction === "left") {
+        if (col === 0 || board[row][col - 1] !== 0) {
+          return false;
+        }
+      } else if (direction === "right") {
+        if (col + width >= board[row].length || board[row][col + width] !== 0) {
+          return false;
+        }
+      } else if (direction === "up") {
+        if (row === 0 || board[row - 1][col] !== 0) {
+          return false;
+        }
+      } else if (direction === "down") {
+        if (row + height >= board.length || board[row + height][col] !== 0) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function movePiece(row, col, width, height, direction) {
+      if (!canMovePiece(row, col, width, height, direction)) {
+        return;
+      }
+
+      if (direction === "left") {
+        board[row][col - 1] = board[row][col];
+        board[row][col + width - 1] = 0;
+      } else if (direction === "right") {
+        board[row][col + width] = board[row][col];
+        board[row][col] = 0;
+      } else if (direction === "up") {
+        board[row - 1][col] = board[row][col];
+        board[row + height - 1][col] = 0;
+      } else if (direction === "down") {
+        board[row + height][col] = board[row][col];
+        board[row][col] = 0;
+      }
+
+      renderBoard();
+    }
+
+    function selectPiece(pieceId) {
+      selectedPiece = pieces.find(function(piece) {
+        return piece.id === pieceId;
+      });
+    }
+
+    function placePiece(row, col) {
+      var pieceWidth = selectedPiece.width;
+      var pieceHeight = selectedPiece.height;
+
+      for (var r = row; r < row + pieceHeight; r++) {
+        for (var c = col; c < col + pieceWidth; c++) {
+          if (board[r][c] !== 0) {
+            return;
+          }
+        }
+      }
+
+      for (var i = 0; i < pieceHeight; i++) {
+        for (var j = 0; j < pieceWidth; j++) {
+          board[row + i][col + j] = selectedPiece.id + 1;
+        }
+      }
+
+      selectedPiece = null;
+      renderBoard();
+    }
+
+    renderBoard();
+
+    var cells = document.getElementsByClassName("cell");
+    for (var i = 0; i < cells.length; i++) {
+      cells[i].addEventListener("click", function() {
+        var row = Math.floor(this.id.substring(4) / 4);
+        var col = this.id.substring(4) % 4;
+
+        if (selectedPiece !== null) {
+          placePiece(row, col);
+        } else {
+          selectPiece(board[row][col]);
+        }
+      });
+    }
+
+    document.addEventListener("keydown", function(event) {
+      if (selectedPiece === null) {
+        return;
+      }
+
+      var key = event.key.toLowerCase();
+      var row, col, width, height;
+
+      for (row = 0; row < board.length; row++) {
+        for (col = 0; col < board[row].length; col++) {
+          if (board[row][col] === selectedPiece.id + 1) {
+            width = selectedPiece.width;
+            height = selectedPiece.height;
+            break;
+          }
+        }
+      }
+
+      if (key === "arrowleft") {
+        movePiece(row, col, width, height, "left");
+      } else if (key === "arrowright") {
+        movePiece(row, col, width, height, "right");
+      } else if (key === "arrowup") {
+        movePiece(row, col, width, height, "up");
+      } else if (key === "arrowdown") {
+        movePiece(row, col, width, height, "down");
+      }
+    });
+  </script>
+</body>
+</html>
